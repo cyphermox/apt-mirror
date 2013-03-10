@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import os
 import subprocess
@@ -60,28 +60,16 @@ class Controller(object):
 
             raise cherrypy.HTTPError(404)
 
-    def catchall(self, **kwargs):
-        return ("Hello. It looks like you're trying to browse the Ubuntu apt "
-                "mirror. Don't do that")
-
 d = cherrypy.dispatch.RoutesDispatcher()
 c = Controller()
 d.connect('dists',
           '/{timestamp}/dists/{path:.*?}',
           c,
           action='dists')
-d.connect('catchall',
-          '/{path:.*?}',
-          c,
-          action='catchall')
-
 conf = {
     '/': {'request.dispatch': d},
 }
 
-if __name__ == '__main__':
-    cherrypy.config.update({'server.socket_host': '0.0.0.0',
-                            'server.socket_port': 9999,
-                            'log.screen': True})
-    app = cherrypy.tree.mount(None, config=conf)
-    cherrypy.server.start()
+def application(environ, start_response):
+    cherrypy.tree.mount(None, config=conf)
+    return cherrypy.tree(environ, start_response)
