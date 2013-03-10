@@ -1,22 +1,15 @@
 #!/usr/bin/python
 
-import errno
-import fcntl
-import hashlib
-import mimetypes
 import os
-import Queue
-import select
 import subprocess
-import tempfile
 
 import cherrypy
-import pycurl
 
 DIR = os.path.abspath(os.path.dirname(__file__))
 
 DISTS_DIR = os.path.join(DIR, "dists")
 CACHE_DIR = os.path.join(DIR, "cache")
+
 
 def cat_blob(obj):
     try:
@@ -29,6 +22,7 @@ def cat_blob(obj):
                                 stdout=subprocess.PIPE)
     except subprocess.CalledProcessError:
         raise cherrypy.HTTPError(404)
+
 
 class Controller(object):
     def dists(self, timestamp, path):
@@ -66,65 +60,6 @@ class Controller(object):
 
             raise cherrypy.HTTPError(404)
 
-    def pool(self, filename, **kwargs):
-        t = mimetypes.guess_type(filename)
-        cherrypy.response.headers['Content-Type'] = t[0] or 'text/plain'
-
-        h = hashlib.sha1(filename).hexdigest()
-
-        cache_path = os.path.join(CACHE_DIR, h[0], h[1], h[2:])
-        try:
-            os.makedirs(os.path.dirname(cache_path))
-        except OSError, e:
-            if e.errno != errno.EEXIST:
-                raise
-
-        if os.path.exists(cache_path):
-            for l in  open(cache_path, 'rb'):
-                yield l
-        else:
-            with tempfile.NamedTemporaryFile(dir=os.path.dirname(cache_path),
-                                             prefix=(os.path.basename(cache_path) + '.'),
-                                             delete=False) as f:
-                url = 'https://launchpad.net/ubuntu/+archive/primary/+files/' + filename.encode('utf-8')
-
-                q = Queue.Queue()
-                m = pycurl.CurlMulti()
-                c = pycurl.Curl()
-
-                c.setopt(pycurl.URL, url)
-                c.setopt(pycurl.FOLLOWLOCATION, 1)
-                c.setopt(pycurl.FAILONERROR, 1)
-
-                def write(data):
-                    q.put(data)
-                    f.write(data)
-                c.setopt(pycurl.WRITEFUNCTION, write)
-
-                m.add_handle(c)
-
-                while True:
-                    while True:
-                        ret, num_handles = m.perform()
-                        if ret != pycurl.E_CALL_MULTI_PERFORM:
-                            break
-                    while not q.empty():
-                        yield q.get()
-
-                    if not num_handles:
-                        break
-
-                    select.select(*m.fdset())
-
-                if c.getinfo(pycurl.HTTP_CODE) == 404:
-                    os.unlink(f.name)
-                    raise cherrypy.HTTPError(404)
-                else:
-                    f.flush()
-                    os.fsync(f.fileno())
-                    f.close()
-                    os.rename(f.name, cache_path)
-
     def catchall(self, **kwargs):
         return ("Hello. It looks like you're trying to browse the Ubuntu apt "
                 "mirror. Don't do that")
@@ -135,10 +70,6 @@ d.connect('dists',
           '/{timestamp}/dists/{path:.*?}',
           c,
           action='dists')
-d.connect('pool',
-          '/{timestamp}/pool/{component}/{prefix:(lib)?[a-z]}/{spackage}/{filename}',
-          c,
-          action='pool')
 d.connect('catchall',
           '/{path:.*?}',
           c,
@@ -146,7 +77,7 @@ d.connect('catchall',
 
 conf = {
     '/': {'request.dispatch': d},
-    }
+}
 
 if __name__ == '__main__':
     cherrypy.config.update({'server.socket_host': '0.0.0.0',
