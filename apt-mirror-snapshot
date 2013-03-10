@@ -39,6 +39,9 @@ def main(args):
                                '--exclude=.gitignore',
                                '--exclude=installer-*',
                                '--exclude=i18n',
+                               '--exclude=Contents-*',
+                               '--exclude=dist-upgrader-all',
+                               '--exclude=uefi',
                                DISTS_MIRROR,
                                DISTS_DIR])
 
