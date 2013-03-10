@@ -4,12 +4,12 @@ import fcntl
 import os
 import subprocess
 import sys
-import urlparse
 
 DISTS_MIRROR = "rsync://archive.ubuntu.com/ubuntu/dists/"
 DIR = os.path.abspath(os.path.dirname(__file__))
 
 DISTS_DIR = os.path.join(DIR, "dists")
+
 
 ###
 #
@@ -61,15 +61,17 @@ def main(args):
                 if f.endswith('.bz2'):
                     uncompressed = f[:-len('.bz2')]
                     if not os.path.exists(os.path.join(root, uncompressed)):
-                        subprocess.check_call(['bunzip2', '-c'],
-                                              stdin=open(os.path.join(root, f)),
-                                              stdout=open(os.path.join(root, uncompressed), 'w'))
+                        subprocess.check_call(
+                            ['bunzip2', '-c'],
+                            stdin=open(os.path.join(root, f)),
+                            stdout=open(os.path.join(root, uncompressed), 'w'))
                 if f.endswith('.gz'):
                     uncompressed = f[:-len('.gz')]
                     if not os.path.exists(os.path.join(root, uncompressed)):
-                        subprocess.check_call(['gunzip', '-c'],
-                                              stdin=open(os.path.join(root, f)),
-                                              stdout=open(os.path.join(root, uncompressed), 'w'))
+                        subprocess.check_call(
+                            ['gunzip', '-c'],
+                            stdin=open(os.path.join(root, f)),
+                            stdout=open(os.path.join(root, uncompressed), 'w'))
 
         subprocess.check_call(['git', 'add', '-A'],
                               cwd=DISTS_DIR)
