@@ -1,0 +1,17 @@
+#!/bin/sh -e
+
+verify_one () {
+    BASE=$(dirname $1)
+    RELEASE=${BASE}/Release
+    RELEASE_SIGNED=${BASE}/Release.gpg
+    apt-ftparchive release ${BASE} | egrep ' [0-9a-f]{32} ' | grep -v " Release$" | xargs -L1 -I{} grep -q {} ${RELEASE}
+    gpgv -q --keyring /usr/share/keyrings/ubuntu-archive-keyring.gpg ${RELEASE_SIGNED} ${RELEASE} 2>/dev/null
+}
+
+if [ -n "$1" ]; then
+    verify_one "$1"
+else
+    for repository in $(find . -name 'Release.gpg'); do
+	verify_one "$repository"
+    done
+fi

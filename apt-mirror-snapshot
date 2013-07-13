@@ -4,11 +4,62 @@ import fcntl
 import os
 import subprocess
 import sys
+import shutil
 
 DISTS_MIRROR = "rsync://archive.ubuntu.com/ubuntu/dists/"
+PORTS_MIRROR = "rsync://ports.ubuntu.com/ubuntu-ports/dists/"
 DIR = os.path.abspath(os.path.dirname(__file__))
 
 DISTS_DIR = os.path.join(DIR, "dists")
+
+exclude = [
+    'installer-*',
+    'Contents-*',
+    'dist-upgrader-all',
+    'uefi',
+    'i18n',
+    '*.gz',
+    'Packages',
+    'Sources',
+]
+
+def download_rsync(url):
+    command = [
+        'rsync', '-aP',
+        '--exclude=.git',
+        '--exclude=.gitignore']
+    command.extend(['--exclude=' + e for e in exclude])
+    command.extend([url, DISTS_DIR])
+    return command
+
+def download_http(url):
+    if url.endswith('/dists/'):
+        cut_dirs = 1
+        prefix = DIR
+    else:
+        cut_dirs = 2
+        preifx = DISTS_DIR
+            
+    command = [
+        'wget',
+        '-r',
+        '-P', prefix,
+        '-nH',
+        '--cut-dirs', cut_dirs,
+        '--no-parent',
+        '--reject="index.html*"']
+    command.extend(['--reject=' + e for e in exclude])
+    command.append(url)
+    return command        
+    
+def download(url):
+    command = None
+    if url.startswith("rsync://"):
+        command = download_rsync(url)
+    if url.startswith("http://"):
+        command = download_http(url)
+
+    subprocess.check_call(command)
 
 
 ###
@@ -26,24 +77,15 @@ def main(args):
             subprocess.check_call(['git', 'init', DISTS_DIR])
             with open(os.path.join(DISTS_DIR, '.gitignore'), 'w') as f:
                 f.write('*.gz\n*.bz2\n')
+            shutil.copyfile(os.path.join(DIR, 'apt-release-verify'), os.path.join(DISTS_DIR, '.git', 'hooks', 'pre-commit'))
             subprocess.check_call(['git', 'add', '.gitignore'],
                                   cwd=DISTS_DIR)
             subprocess.check_call(['git', 'commit',
                                    '-m', 'Initial commit',
                                    '--date', '1970-01-01 00:00:00'],
                                   cwd=DISTS_DIR)
-
-        subprocess.check_call(['rsync', '-aP',
-                               '--delete',
-                               '--exclude=.git',
-                               '--exclude=.gitignore',
-                               '--exclude=installer-*',
-                               '--exclude=i18n',
-                               '--exclude=Contents-*',
-                               '--exclude=dist-upgrader-all',
-                               '--exclude=uefi',
-                               DISTS_MIRROR,
-                               DISTS_DIR])
+        download(DISTS_MIRROR)
+        download(PORTS_MIRROR)
 
         newest_timestamp = 0
         for root, dirs, files in os.walk(DISTS_DIR):
@@ -65,13 +107,6 @@ def main(args):
                             ['bunzip2', '-c'],
                             stdin=open(os.path.join(root, f)),
                             stdout=open(os.path.join(root, uncompressed), 'w'))
-                if f.endswith('.gz'):
-                    uncompressed = f[:-len('.gz')]
-                    if not os.path.exists(os.path.join(root, uncompressed)):
-                        subprocess.check_call(
-                            ['gunzip', '-c'],
-                            stdin=open(os.path.join(root, f)),
-                            stdout=open(os.path.join(root, uncompressed), 'w'))
 
         subprocess.check_call(['git', 'add', '-A'],
                               cwd=DISTS_DIR)
@@ -88,6 +123,7 @@ def main(args):
                                    '-m', 'Auto-generated commit'],
                                   cwd=DISTS_DIR,
                                   env=env)
+        subprocess.call(['git', 'repack', '-a', '-d', '--depth=256', '--window=1024'])
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
