@@ -23,44 +23,18 @@ exclude = [
     'Sources',
 ]
 
-def download_rsync(url):
+def download(url):
     command = [
         'rsync', '-aP',
         '--exclude=.git',
         '--exclude=.gitignore']
+    with open(os.path.join(DIR, 'excludes.list'), 'r') as exclude_frozen:
+        for line in exclude_frozen:
+            exclude.append(line.strip())
     command.extend(['--exclude=' + e for e in exclude])
     command.extend([url, DISTS_DIR])
-    return command
-
-def download_http(url):
-    if url.endswith('/dists/'):
-        cut_dirs = 1
-        prefix = DIR
-    else:
-        cut_dirs = 2
-        preifx = DISTS_DIR
-            
-    command = [
-        'wget',
-        '-r',
-        '-P', prefix,
-        '-nH',
-        '--cut-dirs', cut_dirs,
-        '--no-parent',
-        '--reject="index.html*"']
-    command.extend(['--reject=' + e for e in exclude])
-    command.append(url)
-    return command        
-    
-def download(url):
-    command = None
-    if url.startswith("rsync://"):
-        command = download_rsync(url)
-    if url.startswith("http://"):
-        command = download_http(url)
-
+    print(command)
     subprocess.check_call(command)
-
 
 ###
 #

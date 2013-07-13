@@ -1,0 +1,3 @@
+#!/bin/sh
+ubuntu-distro-info --unsupported | sed 's/$/*/'
+ubuntu-distro-info --supported | grep -v `ubuntu-distro-info --devel`
