@@ -33,13 +33,13 @@ class Controller(object):
             cherrypy.response.headers['Content-Type'] = 'application/x-bzip2'
 
         p = subprocess.Popen(['git', 'rev-list',
-                              '--min-age=%s' % timestamp.encode('utf-8'),
+                              '--min-age=%s' % timestamp,
                               '-1',
                               'HEAD'],
                              stdout=subprocess.PIPE,
                              cwd=DISTS_DIR)
         commit, _ = p.communicate()
-        commit = commit.strip()
+        commit = commit.strip().decode('utf-8')
 
         if not commit:
             raise cherrypy.HTTPError(404)
