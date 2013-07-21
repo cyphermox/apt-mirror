@@ -76,11 +76,10 @@ def main(args):
             for f in files:
                 if f.endswith('.bz2'):
                     uncompressed = f[:-len('.bz2')]
-                    if not os.path.exists(os.path.join(root, uncompressed)):
-                        subprocess.check_call(
-                            ['bunzip2', '-c'],
-                            stdin=open(os.path.join(root, f)),
-                            stdout=open(os.path.join(root, uncompressed), 'w'))
+                    subprocess.check_call(
+                        ['bunzip2', '-c'],
+                        stdin=open(os.path.join(root, f)),
+                        stdout=open(os.path.join(root, uncompressed), 'w'))
 
         subprocess.check_call(['git', 'add', '-A'],
                               cwd=DISTS_DIR)

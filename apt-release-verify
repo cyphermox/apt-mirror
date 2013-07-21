@@ -1,10 +1,19 @@
 #!/bin/sh -e
 
+diff_one () {
+    BASE=$(dirname $1)
+    RELEASE=${BASE}/Release
+    RELEASE_SIGNED=${BASE}/Release.gpg
+    apt-ftparchive release ${BASE} | egrep ' [0-9a-f]{32} ' | grep -v " Release$" > ${RELEASE}.our
+    cat ${RELEASE} | grep -e 'Sources$' -e 'Packages$' > ${RELEASE}.current
+    diff -U1 ${RELEASE}.current ${RELEASE}.our
+}
+
 verify_one () {
     BASE=$(dirname $1)
     RELEASE=${BASE}/Release
     RELEASE_SIGNED=${BASE}/Release.gpg
-    apt-ftparchive release ${BASE} | egrep ' [0-9a-f]{32} ' | grep -v " Release$" | xargs -L1 -I{} grep -q {} ${RELEASE}
+    apt-ftparchive release ${BASE} | egrep ' [0-9a-f]{32} ' | grep -v " Release$" | xargs -L1 -I{} grep -q {} ${RELEASE} || diff_one $1
     gpgv -q --keyring /usr/share/keyrings/ubuntu-archive-keyring.gpg ${RELEASE_SIGNED} ${RELEASE} 2>/dev/null
 }
 
