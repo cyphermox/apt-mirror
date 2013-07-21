@@ -51,7 +51,9 @@ def main(args):
             subprocess.check_call(['git', 'init', DISTS_DIR])
             with open(os.path.join(DISTS_DIR, '.gitignore'), 'w') as f:
                 f.write('*.gz\n*.bz2\n')
-            shutil.copyfile(os.path.join(DIR, 'apt-release-verify'), os.path.join(DISTS_DIR, '.git', 'hooks', 'pre-commit'))
+            pre_commit = os.path.join(DISTS_DIR, '.git', 'hooks', 'pre-commit')
+            shutil.copyfile(os.path.join(DIR, 'apt-release-verify'), pre_commit)
+            os.chmod(pre_commit, 0o755)
             subprocess.check_call(['git', 'add', '.gitignore'],
                                   cwd=DISTS_DIR)
             subprocess.check_call(['git', 'commit',
