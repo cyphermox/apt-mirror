@@ -77,11 +77,13 @@ def main(args):
                 dirs.remove('.git')
             for f in files:
                 if f.endswith('.bz2'):
-                    uncompressed = f[:-len('.bz2')]
+                    compressed = os.path.join(root, f)
+                    uncompressed = compressed[:-len('.bz2')]
+                    #if not os.path.exists(uncompressed) or os.path.getmtime(compressed) > os.path.getmtime(uncompressed):
                     subprocess.check_call(
-                        ['bunzip2', '-c'],
-                        stdin=open(os.path.join(root, f)),
-                        stdout=open(os.path.join(root, uncompressed), 'w'))
+                            ['bunzip2', '-c'],
+                            stdin=open(compressed),
+                            stdout=open(uncompressed, 'w'))
 
         subprocess.check_call(['git', 'add', '-A'],
                               cwd=DISTS_DIR)
@@ -98,7 +100,7 @@ def main(args):
                                    '-m', 'Auto-generated commit'],
                                   cwd=DISTS_DIR,
                                   env=env)
-        subprocess.call(['git', 'repack', '-a', '-d', '--depth=256', '--window=1024'])
+            subprocess.call(['git', 'repack', '-a', '-d', '--depth=256', '--window=1024'])
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))

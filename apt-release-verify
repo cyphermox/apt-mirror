@@ -4,8 +4,8 @@ diff_one () {
     BASE=$(dirname $1)
     RELEASE=${BASE}/Release
     RELEASE_SIGNED=${BASE}/Release.gpg
-    apt-ftparchive release ${BASE} | egrep ' [0-9a-f]{32} ' | grep -v " Release$" > ${RELEASE}.our
-    cat ${RELEASE} | grep -e 'Sources$' -e 'Packages$' > ${RELEASE}.current
+    apt-ftparchive release ${BASE} | egrep ' [0-9a-f]{32} ' | grep -v " Release$" | grep -e "Packages$" -e "Sources$" > ${RELEASE}.our
+    cat ${RELEASE} | egrep ' [0-9a-f]{32} ' | grep -v " Release$" | grep -e "Packages$" -e "Sources$" > ${RELEASE}.current
     diff -U1 ${RELEASE}.current ${RELEASE}.our
 }
 
@@ -23,4 +23,5 @@ else
     for repository in $(find . -name 'Release.gpg'); do
 	verify_one "$repository"
     done
+    echo "Verified all repositories."
 fi
