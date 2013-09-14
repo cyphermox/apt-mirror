@@ -1,0 +1,39 @@
+server {
+	listen 80 default_server;
+	listen [::]:80 default_server ipv6only=on;
+
+	root /usr/share/nginx/html;
+	index index.html index.htm;
+
+	server_name localhost;
+
+	location / {
+		try_files $uri @snapshot;
+	}
+
+	location @snapshot {
+		proxy_pass http://localhost:9999;
+		proxy_intercept_errors on;
+		recursive_error_pages on;
+		error_page 404 = @archive;
+	}
+
+	location @archive {
+		rewrite "/[0-9]{10}/(.*)" http://archive.ubuntu.com/ubuntu/$1;
+		error_page 404 = @ports;
+	}
+
+	location @ports {
+		rewrite "/[0-9]{10}/(.*)" http://ports.ubuntu.com/$1;
+		error_page 404 = @old;
+	}
+
+	location @old {
+		rewrite "/[0-9]{10}/(.*)" http://old-releases.ubuntu.com/ubuntu/$1;
+		error_page 404 = @launchpad;
+	}
+
+	location @launchpad {
+		rewrite "^.*/(.*)$" https://launchpad.net/ubuntu/+archive/primary/+files/$1;
+	}
+}

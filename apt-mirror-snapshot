@@ -100,7 +100,6 @@ def main(args):
                                    '-m', 'Auto-generated commit'],
                                   cwd=DISTS_DIR,
                                   env=env)
-            subprocess.call(['git', 'repack', '-a', '-d', '--depth=256', '--window=1024'])
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
