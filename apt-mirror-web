@@ -68,6 +68,10 @@ d.connect('dists',
           '/{timestamp}/dists/{path:.*?}',
           c,
           action='dists')
+d.connect('latest',
+          '/dists/{path:.*?}',
+          c,
+          action='dists')
 conf = {
     '/': {'request.dispatch': d},
 }
