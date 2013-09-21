@@ -1,0 +1,77 @@
+= Snapshot Ubuntu Mirror =
+
+== About ==
+
+This is an instance of a snapshot mirror for Ubuntu Archive. It transparently
+redirects requests to:
+
+      - http://archive.ubuntu.com
+      -	http://ports.ubuntu.com
+      - http://old-releases.ubuntu.com
+      - Launchpad Librarian archives
+
+By default you can simply use this as a normal repository URL, and in
+that case the latest available repository metadata will be served.
+
+To access past snapshots, append date to the URL in seconds since the
+epoch (1970-01-01 UTC). E.g. to get snapshots from Sat Sep 21 23:01:03
+BST 2013:
+
+`$ date -d "Sat Sep 21 23:01:03 BST 2013" +%s`
+
+`1379800863`
+
+Append `/1379800863/` to the URL.
+
+Similarly to convert back from timestamp to a more readable date use:
+
+`$ date -d "@1379800863"`
+
+`Sat Sep 21 23:01:03 BST 2013`
+
+== Typical Usage ==
+
+   - This is a good mirror, for those working frequently with `armhf`,
+`arm64`, `powerpc` repositories, as now one doesn't need to
+differentiate between repositories.
+
+   - It's also useful when upgrading from obsolete releases to supported
+ones. (Also when your architecture may have moved between `archive`
+and `ports`)
+
+   - It allows one to go back in time, and perform installation as if it
+was done in the past (historical data permitting).
+
+   - With the git repository of the snapshot archive data, one can easily
+use `git-bisect` together with with `grep-dctrl` to do binary archive
+bisection.
+
+   - If one stores the checksum / timestamp of the `Release` files used
+during an image build (e.g. Ubuntu ISOs, Ubuntu Phone touch images,
+etc). One can later point image builder to this repository and
+recreate the image. (Sans installer `.udeb` components which are not
+snapshotted at the moment).
+
+   - If one is using `jigdo` to download/reconstructed d-i based images,
+one can point it at this mirror, if the typical mirrors are missing
+some of the .debs no longer available on the mirrors. This mirror
+might still have them, as it transparently redirects to Launchpad
+Librarian archives.
+
+  - ...And possibly more!
+
+== Source Code ==
+
+The source code for this website is at: https://github.com/xnox/apt-mirror
+
+The snapshots of the ubuntu mirror are at:
+https://github.com/xnox/ubuntu-snapshot
+
+== Acknowledgement ==
+
+Originally the idea for this service was created at MokaFive and
+opensourced with help from Geoffrey Thomas, which I have later
+improved on.
+
+At the moment this instance is hosted by Canonical, on an instance
+provisioned by OpenStack.
