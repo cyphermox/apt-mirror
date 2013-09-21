@@ -25,17 +25,19 @@ def cat_blob(obj):
 
 
 class Controller(object):
-    def dists(self, timestamp, path):
+    def dists(self, timestamp=None, path=None):
         cherrypy.response.headers['Content-Type'] = 'text/plain'
         if path.endswith('.gz'):
             cherrypy.response.headers['Content-Type'] = 'application/x-gzip'
         elif path.endswith('.bz2'):
             cherrypy.response.headers['Content-Type'] = 'application/x-bzip2'
 
-        p = subprocess.Popen(['git', 'rev-list',
-                              '--min-age=%s' % timestamp,
-                              '-1',
-                              'HEAD'],
+        cmd = ['git', 'rev-list']
+        if timestamp not in ['ubuntu', 'ubuntu-ports', None]:
+            cmd += ['--min-age=%s' % timestamp]
+        cmd += ['-1', 'HEAD']
+
+        p = subprocess.Popen(cmd,
                              stdout=subprocess.PIPE,
                              cwd=DISTS_DIR)
         commit, _ = p.communicate()
