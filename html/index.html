@@ -741,6 +741,18 @@ asciidoc.install();
 </div>
 <div id="content">
 <div class="sect1">
+<h2 id="_how_to_use">How to Use</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>For latest mirror, for any architecture and any release:</p></div>
+<div class="paragraph"><p><tt>deb http://ubuntu-snapshot.surgut.co.uk/ RELEASE main universe restricted multiverse</tt></p></div>
+<div class="paragraph"><p><tt>deb-src http://ubuntu-snapshot.surgut.co.uk/ RELEASE main universe restricted multiverse</tt></p></div>
+<div class="paragraph"><p>For back in time snapshot, for any archtecture and any release:</p></div>
+<div class="paragraph"><p><tt>deb http://ubuntu-snapshot.surgut.co.uk/1378166400/ RELEASE main universe restricted multiverse</tt></p></div>
+<div class="paragraph"><p><tt>deb-src http://ubuntu-snapshot.surgut.co.uk/1378166400/ RELEASE main universe restricted multiverse</tt></p></div>
+<div class="paragraph"><p>As compatability, <tt>/ubuntu/</tt> and <tt>/ubuntu-ports/</tt> are timestamp aliases for latest mirror.</p></div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="_about">About</h2>
 <div class="sectionbody">
 <div class="paragraph"><p>This is an instance of a snapshot mirror for Ubuntu Archive. It transparently
@@ -831,6 +843,13 @@ Librarian archives.
 </li>
 <li>
 <p>
+If one is spinning up a lot of instances, by using a
+frozen-in-time mirror, one guarantees that all instances are identical
+and will avoid apt-hash collision errors from apt at updates times.
+</p>
+</li>
+<li>
+<p>
 &#8230;And possibly more!
 </p>
 </li>
@@ -838,11 +857,20 @@ Librarian archives.
 </div>
 </div>
 <div class="sect1">
-<h2 id="_source_code">Source Code</h2>
+<h2 id="_bugs_amp_wishlist_features">Bugs &amp; Wishlist Features</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Possibly beta/alpha/monthly/etc timestamp aliases will be provided in the future.</p></div>
+<div class="paragraph"><p>Directory listings are not enabled at the moment.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_source_code_amp_contact_details">Source Code &amp; Contact Details</h2>
 <div class="sectionbody">
 <div class="paragraph"><p>The source code for this website is at: <a href="https://github.com/xnox/apt-mirror">https://github.com/xnox/apt-mirror</a></p></div>
 <div class="paragraph"><p>The snapshots of the ubuntu mirror are at:
 <a href="https://github.com/xnox/ubuntu-snapshot">https://github.com/xnox/ubuntu-snapshot</a></p></div>
+<div class="paragraph"><p>This service is operated by
+<a href="https://launchpad.net/~xnox/+contactuser">Dmitrijs Ledkovs</a></p></div>
 </div>
 </div>
 <div class="sect1">
@@ -859,7 +887,7 @@ provisioned by OpenStack.</p></div>
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2013-09-21 23:27:48 BST
+Last updated 2013-09-22 00:51:59 BST
 </div>
 </div>
 </body>

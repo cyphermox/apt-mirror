@@ -1,5 +1,21 @@
 = Snapshot Ubuntu Mirror =
 
+== How to Use ==
+
+For latest mirror, for any architecture and any release:
+
+`deb http://ubuntu-snapshot.surgut.co.uk/ RELEASE main universe restricted multiverse`
+
+`deb-src http://ubuntu-snapshot.surgut.co.uk/ RELEASE main universe restricted multiverse`
+
+For back in time snapshot, for any archtecture and any release:
+
+`deb http://ubuntu-snapshot.surgut.co.uk/1378166400/ RELEASE main universe restricted multiverse`
+
+`deb-src http://ubuntu-snapshot.surgut.co.uk/1378166400/ RELEASE main universe restricted multiverse`
+
+As compatability, `/ubuntu/` and `/ubuntu-ports/` are timestamp aliases for latest mirror.
+
 == About ==
 
 This is an instance of a snapshot mirror for Ubuntu Archive. It transparently
@@ -58,14 +74,27 @@ some of the .debs no longer available on the mirrors. This mirror
 might still have them, as it transparently redirects to Launchpad
 Librarian archives.
 
+   - If one is spinning up a lot of instances, by using a
+frozen-in-time mirror, one guarantees that all instances are identical
+and will avoid apt-hash collision errors from apt at updates times.
+
   - ...And possibly more!
 
-== Source Code ==
+== Bugs & Wishlist Features ==
+
+Possibly beta/alpha/monthly/etc timestamp aliases will be provided in the future.
+
+Directory listings are not enabled at the moment.
+
+== Source Code & Contact Details ==
 
 The source code for this website is at: https://github.com/xnox/apt-mirror
 
 The snapshots of the ubuntu mirror are at:
 https://github.com/xnox/ubuntu-snapshot
+
+This service is operated by
+https://launchpad.net/~xnox/+contactuser[Dmitrijs Ledkovs]
 
 == Acknowledgement ==
 
