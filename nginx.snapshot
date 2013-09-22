@@ -1,3 +1,16 @@
+upstream archives {
+	server archive.ubuntu.com;
+	server old-releases.ubuntu.com;
+}
+
+upstream ports {
+	server ports.ubuntu.com;
+}
+
+upstream launchpad {
+	server launchpad.net;
+}
+
 server {
 	listen 80 default_server;
 	listen [::]:80 default_server ipv6only=on;
@@ -7,6 +20,8 @@ server {
 
 	server_name localhost;
 
+	recursive_error_pages   on;
+
 	location / {
 		try_files $uri @snapshot;
 	}
@@ -14,26 +29,29 @@ server {
 	location @snapshot {
 		proxy_pass http://localhost:9999;
 		proxy_intercept_errors on;
-		recursive_error_pages on;
 		error_page 404 = @archive;
 	}
 
 	location @archive {
-		rewrite "/[0-9]{10}/(.*)" http://archive.ubuntu.com/ubuntu/$1;
+		rewrite "/[0-9]{10}/(.*)" /ubuntu/$1 break;
+		proxy_pass http://archives;
+		proxy_intercept_errors on;		
+		proxy_next_upstream error timeout http_404;
 		error_page 404 = @ports;
 	}
 
 	location @ports {
-		rewrite "/[0-9]{10}/(.*)" http://ports.ubuntu.com/$1;
-		error_page 404 = @old;
-	}
-
-	location @old {
-		rewrite "/[0-9]{10}/(.*)" http://old-releases.ubuntu.com/ubuntu/$1;
+		rewrite "/ubuntu/(.*)" /ubuntu-ports/$1 break;
+		proxy_pass http://ports;
+		proxy_intercept_errors on;
+		proxy_next_upstream error timeout http_404;
 		error_page 404 = @launchpad;
 	}
 
 	location @launchpad {
-		rewrite "^.*/(.*)$" https://launchpad.net/ubuntu/+archive/primary/+files/$1;
+		rewrite "^.*/(.*)$" /ubuntu/+archive/primary/+files/$1 break;
+		proxy_pass http://launchpad;
+		proxy_intercept_errors on;
+		error_page 404 = /404.html;
 	}
 }
