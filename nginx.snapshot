@@ -7,10 +7,6 @@ upstream ports {
 	server ports.ubuntu.com;
 }
 
-upstream launchpad {
-	server launchpad.net;
-}
-
 server {
 	listen 80 default_server;
 	listen [::]:80 default_server ipv6only=on;
@@ -49,9 +45,6 @@ server {
 	}
 
 	location @launchpad {
-		rewrite "^.*/(.*)$" /ubuntu/+archive/primary/+files/$1 break;
-		proxy_pass http://launchpad;
-		proxy_intercept_errors on;
-		error_page 404 = /404.html;
+		rewrite "^.*/(.*)$" https://launchpad.net/ubuntu/+archive/primary/+files/$1;
 	}
 }
