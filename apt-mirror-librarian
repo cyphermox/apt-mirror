@@ -1,0 +1,11 @@
+#!/usr/bin/python3
+
+class NoRed(urllib.HTTPErrorProcessor):
+    def http_response(self, request, response):
+        return response
+    https_response  = http_response
+
+opener = urllib.request.build_opener(NoRed)
+response = opener.open('https://launchpad.net/ubuntu/+source/hello/2.8-4/+build/4907789/+files/hello_2.8-4_amd64.deb')
+response.getheader('Location')
+'https://launchpadlibrarian.net/148466543/hello_2.8-4_amd64.deb'
