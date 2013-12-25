@@ -1,11 +1,36 @@
 #!/usr/bin/python3
+import cherrypy
+import urllib.request
 
-class NoRed(urllib.HTTPErrorProcessor):
+
+class NoRed(urllib.request.HTTPErrorProcessor):
     def http_response(self, request, response):
         return response
-    https_response  = http_response
+    https_response = http_response
 
-opener = urllib.request.build_opener(NoRed)
-response = opener.open('https://launchpad.net/ubuntu/+source/hello/2.8-4/+build/4907789/+files/hello_2.8-4_amd64.deb')
-response.getheader('Location')
-'https://launchpadlibrarian.net/148466543/hello_2.8-4_amd64.deb'
+
+class Controller(object):
+    def pool(self, debfile=None):
+        opener = urllib.request.build_opener(NoRed)
+        response = opener.open(
+            'https://launchpad.net/ubuntu/+archive/primary/+files/' + debfile)
+        url = response.getheader('Location').replace('https://', 'http://')
+        raise cherrypy.HTTPRedirect(url)
+
+d = cherrypy.dispatch.RoutesDispatcher()
+c = Controller()
+d.connect('pool',
+          '{debfile:.*?}',
+          c,
+          action='pool')
+conf = {
+    '/': {'request.dispatch': d},
+}
+
+
+def application(environ, start_response):
+    cherrypy.tree.mount(None, config=conf)
+    return cherrypy.tree(environ, start_response)
+
+if __name__ == '__main__':
+    print(c.pool("hello_2.8-4_amd64.deb"))

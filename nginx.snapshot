@@ -46,5 +46,6 @@ server {
 
 	location @launchpad {
 		rewrite "^.*/(.*)$" https://launchpad.net/ubuntu/+archive/primary/+files/$1;
+		proxy_pass http://localhost:9998;
 	}
 }
