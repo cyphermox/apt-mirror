@@ -6,8 +6,7 @@ import subprocess
 import sys
 import shutil
 
-DISTS_MIRROR = "rsync://archive.ubuntu.com/ubuntu/dists/"
-PORTS_MIRROR = "rsync://ports.ubuntu.com/ubuntu-ports/dists/"
+DISTS_MIRROR = "/home/ubuntu-archive/mirror/ubuntu/dists/"
 DIR = os.path.abspath(os.path.dirname(__file__))
 
 DISTS_DIR = os.path.join(DIR, "dists")
@@ -61,7 +60,6 @@ def main(args):
                                    '--date', '1970-01-01 00:00:00'],
                                   cwd=DISTS_DIR)
         download(DISTS_MIRROR)
-        download(PORTS_MIRROR)
 
         newest_timestamp = 0
         for root, dirs, files in os.walk(DISTS_DIR):
