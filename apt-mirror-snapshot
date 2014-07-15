@@ -24,7 +24,7 @@ exclude = [
 
 def download(url):
     command = [
-        'rsync', '-aP',
+        'rsync', '-aqP',
         '--exclude=.git',
         '--exclude=.gitignore']
     with open(os.path.join(DIR, 'excludes.list'), 'r') as exclude_frozen:
