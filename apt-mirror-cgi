@@ -1,0 +1,134 @@
+#! /usr/bin/python
+
+# Clone-and-hack of bits of apt-mirror-web that can be deployed without
+# needing uwsgi or anything other than CGI support.  Probably significantly
+# slower, and only supports dists.
+
+from __future__ import print_function
+
+__metaclass__ = type
+
+import cgitb
+from collections import OrderedDict
+import os
+import subprocess
+import sys
+
+
+cgitb.enable()
+
+
+DIR = os.path.abspath(os.path.dirname(os.path.realpath(__file__)))
+
+DISTS_DIR = os.path.join(DIR, "dists")
+
+
+class HTTPError(Exception):
+    def __init__(self, code):
+        self.code = code
+
+
+class HTTPResponse:
+    def __init__(self):
+        self.status = 200
+        self.headers = OrderedDict()
+        self.body = ""
+
+    def output(self):
+        print("Status: %d" % self.status)
+        for key, value in self.headers.items():
+            print("%s: %s" % (key, value))
+        print()
+        if isinstance(self.body, file):
+            try:
+                chunk = self.body.read(65536)
+                while chunk:
+                    sys.stdout.write(chunk)
+                    chunk = self.body.read(65536)
+            finally:
+                self.body.close()
+        elif self.body is not None:
+            print(self.body, end="")
+
+
+def cat_blob(obj):
+    try:
+        with open("/dev/null", "w") as devnull:
+            subprocess.check_call(['git', 'cat-file', '-e', obj],
+                                  stderr=devnull,
+                                  cwd=DISTS_DIR)
+        return subprocess.Popen(['git', 'cat-file',
+                                 'blob',
+                                 obj],
+                                cwd=DISTS_DIR,
+                                stdout=subprocess.PIPE)
+    except subprocess.CalledProcessError:
+        raise HTTPError(404)
+
+
+def dists(timestamp=None, path=None):
+    response = HTTPResponse()
+
+    response.headers['Content-Type'] = 'text/plain'
+    if path.endswith('.gz'):
+        response.headers['Content-Type'] = 'application/x-gzip'
+    elif path.endswith('.bz2'):
+        response.headers['Content-Type'] = 'application/x-bzip2'
+
+    cmd = ['git', 'rev-list']
+    if timestamp not in ['ubuntu', 'ubuntu-ports', None]:
+        cmd += ['--min-age=%s' % timestamp]
+    cmd += ['-1', 'HEAD']
+
+    p = subprocess.Popen(cmd,
+                         stdout=subprocess.PIPE,
+                         cwd=DISTS_DIR)
+    commit, _ = p.communicate()
+    commit = commit.strip().decode('utf-8')
+
+    if not commit:
+        raise HTTPError(404)
+
+    try:
+        response.body = cat_blob('%s:%s' % (commit, path)).stdout
+    except HTTPError:
+        if path.endswith('.gz'):
+            p = cat_blob('%s:%s' % (commit, path[:-len('.gz')]))
+            response.body = subprocess.Popen(
+                ['gzip', '-cn9'],
+                stdin=p.stdout,
+                stdout=subprocess.PIPE).stdout
+        elif path.endswith('.bz2'):
+            p = cat_blob('%s:%s' % (commit, path[:-len('.bz2')]))
+            response.body = subprocess.Popen(
+                ['bzip2', '-c9'],
+                stdin=p.stdout,
+                stdout=subprocess.PIPE).stdout
+        else:
+            raise HTTPError(404)
+
+    return response
+
+
+def main():
+    try:
+        path = os.environ["PATH_INFO"].split("/")
+        while path and not path[0]:
+            path.pop(0)
+        if len(path) > 1 and path[0] == "dists":
+            response = dists(path="/".join(path[1:]))
+        elif len(path) > 2 and path[1] == "dists":
+            timestamp = path[0]
+            if not timestamp.isdigit():
+                raise HTTPError(404)
+            response = dists(timestamp=timestamp, path="/".join(path[2:]))
+        else:
+            raise HTTPError(404)
+        response.output()
+    except HTTPError as e:
+        print("Status: %d" % e.code)
+        cgitb.handler()
+
+
+if __name__ == "__main__":
+    main()
