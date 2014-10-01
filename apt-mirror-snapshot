@@ -6,7 +6,8 @@ import subprocess
 import sys
 import shutil
 
-DISTS_MIRROR = "/home/ubuntu-archive/mirror/ubuntu/dists/"
+UBUNTU_DISTS_MIRROR = "/home/ubuntu-archive/mirror/ubuntu/dists/"
+UBUNTU_RTM_DISTS_MIRROR = "/home/ubuntu-archive/mirror/ubuntu-rtm/dists/"
 DIR = os.path.abspath(os.path.dirname(__file__))
 
 DISTS_DIR = os.path.join(DIR, "dists")
@@ -59,7 +60,8 @@ def main(args):
                                    '-m', 'Initial commit',
                                    '--date', '1970-01-01 00:00:00'],
                                   cwd=DISTS_DIR)
-        download(DISTS_MIRROR)
+        download(UBUNTU_DISTS_MIRROR)
+        download(UBUNTU_RTM_DISTS_MIRROR)
 
         newest_timestamp = 0
         for root, dirs, files in os.walk(DISTS_DIR):
