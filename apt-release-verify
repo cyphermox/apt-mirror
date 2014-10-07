@@ -1,5 +1,7 @@
 #!/bin/sh -e
 
+APT_RELEASE_VERIFY_KEYRING="${APT_RELEASE_VERIFY_KEYRING:-/usr/share/keyrings/ubuntu-archive-keyring.gpg}"
+
 diff_one () {
     BASE=$(dirname $1)
     RELEASE=${BASE}/Release
@@ -14,7 +16,7 @@ verify_one () {
     RELEASE=${BASE}/Release
     RELEASE_SIGNED=${BASE}/Release.gpg
     apt-ftparchive release ${BASE} | egrep ' [0-9a-f]{32} ' | grep -v " Release$" | xargs -L1 -I{} grep -q {} ${RELEASE} || diff_one $1
-    gpgv -q --keyring /usr/share/keyrings/ubuntu-archive-keyring.gpg ${RELEASE_SIGNED} ${RELEASE} 2>/dev/null
+    gpgv -q --keyring ${APT_RELEASE_VERIFY_KEYRING} ${RELEASE_SIGNED} ${RELEASE} 2>/dev/null
 }
 
 if [ -n "$1" ]; then

@@ -96,6 +96,8 @@ def main(args):
             env = dict(os.environ)
             env['GIT_AUTHOR_DATE'] = '%s %s' % (newest_timestamp, TZ)
             env['GIT_COMMITTER_DATE'] = '%s %s' % (newest_timestamp, TZ)
+            env['APT_RELEASE_VERIFY_KEYRING'] = os.path.join(
+                DIR, 'ubuntu-archive-keyring.gpg')
             subprocess.check_call(['git', 'commit',
                                    '-m', 'Auto-generated commit'],
                                   cwd=DISTS_DIR,
