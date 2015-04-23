@@ -11,11 +11,14 @@ class NoRed(urllib.request.HTTPErrorProcessor):
 
 
 class Controller(object):
-    def pool(self, timestamp=None, debfile=None):
-        url = 'http://launchpad.net/ubuntu/+archive/primary/+files/' + os.path.basename(debfile)
-        raise cherrypy.HTTPRedirect(url)
     def dists(self, timestamp=None, path=None):
         url = 'http://people.canonical.com/~ubuntu-archive/apt-mirror.cgi/' + timestamp + '/dists/' + path
+        raise cherrypy.HTTPRedirect(url)
+    def pool(self, timestamp=None, debfile=None):
+        opener = urllib.request.build_opener(NoRed)
+        response = opener.open(
+            'https://launchpad.net/ubuntu/+archive/primary/+files/' + os.path.basename(debfile))
+        url = response.getheader('Location').replace('https://', 'http://')
         raise cherrypy.HTTPRedirect(url)
 
 d = cherrypy.dispatch.RoutesDispatcher()
