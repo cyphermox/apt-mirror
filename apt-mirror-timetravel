@@ -1,0 +1,50 @@
+#!/usr/bin/python3
+import cherrypy
+import urllib.request
+import os
+
+
+class NoRed(urllib.request.HTTPErrorProcessor):
+    def http_response(self, request, response):
+        return response
+    https_response = http_response
+
+
+class Controller(object):
+    def pool(self, timestamp=None, debfile=None):
+        url = 'http://launchpad.net/ubuntu/+archive/primary/+files/' + os.path.basename(debfile)
+        raise cherrypy.HTTPRedirect(url)
+    def dists(self, timestamp=None, path=None):
+        url = 'http://people.canonical.com/~ubuntu-archive/apt-mirror.cgi/' + timestamp + '/dists/' + path
+        raise cherrypy.HTTPRedirect(url)
+
+d = cherrypy.dispatch.RoutesDispatcher()
+c = Controller()
+d.connect('pool',
+          '/{timestamp}/pool/{debfile:.*?}',
+          c,
+          action='pool')
+d.connect('dists',
+          '/{timestamp}/dists/{path:.*?}',
+          c,
+          action='dists')
+conf = {
+    '/': {'request.dispatch': d},
+}
+
+
+def application(environ, start_response):
+    cherrypy.tree.mount(None, config=conf)
+    return cherrypy.tree(environ, start_response)
+
+if __name__ == '__main__':
+     try:
+         c.pool("1420070400", "pool/main/c/c-ares/libc-ares2_1.7.0-1_i386.deb")
+     except Exception as e:
+         print (e)
+         pass
+     try:
+         c.dists("1420070400", "vivid/restricted/binary-i386/Packages")
+     except Exception as e:
+         print (e)
+         pass
