@@ -7,7 +7,7 @@ description: |
 confinement: strict
 apps:
   apt-mirror-timetravel:
-    command: uwsgi_python35 --http-socket :9999 --wsgi-file /usr/share/apt-mirror/apt-mirror-timetravel
+    command: uwsgi --http-socket :9999 --wsgi-file $SNAP/usr/share/apt-mirror/apt-mirror-timetravel
     plugs: [network, network-bind]
 parts:
   apt-mirror:
@@ -23,6 +23,7 @@ parts:
       apt-release-verify: "usr/share/apt-mirror/apt-release-verify"
       COPYING: "usr/share/doc/apt-mirror/copyright"
       README: "usr/share/doc/apt-mirror/README"
+      uwsgi.wrapper: "usr/bin/uwsgi"
     snap:
       - -apt-mirror-librarian.conf
       - -apt-mirror-web.conf
