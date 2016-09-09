@@ -1,0 +1,49 @@
+name: apt-mirror
+version: "daily"
+summary: time-travelling apt mirror
+description: |
+  apt-mirror allows using snapshots of the Ubuntu archive at a
+  specific point in time.  
+confinement: strict
+apps:
+  apt-mirror-timetravel:
+    command: uwsgi_python35 --http-socket :9999 --wsgi-file /usr/share/apt-mirror/apt-mirror-timetravel
+    plugs: [network, network-bind]
+parts:
+  apt-mirror:
+    source: https://github.com/cyphermox/apt-mirror.git
+    plugin: dump
+    organize:
+      apt-mirror-timetravel: "usr/share/apt-mirror/apt-mirror-timetravel"
+      apt-mirror-web: "usr/share/apt-mirror/apt-mirror-web"
+      apt-mirror-snapshot: "usr/share/apt-mirror/apt-mirror-snapshot"
+      apt-mirror-snapshot-cron: "usr/share/apt-mirror/apt-mirror-snapshot-cron"
+      apt-mirror-librarian: "usr/share/apt-mirror/apt-mirror-librarian"
+      generate-excludes: "usr/share/apt-mirror/generate-excludes"
+      apt-release-verify: "usr/share/apt-mirror/apt-release-verify"
+      COPYING: "usr/share/doc/apt-mirror/copyright"
+      README: "usr/share/doc/apt-mirror/README"
+    snap:
+      - -apt-mirror-librarian.conf
+      - -apt-mirror-web.conf
+      - -apt-mirror-snapshot.conf
+      - -excludes.list
+      - -nginx.snapshot
+  release:
+    source: .
+    plugin: dump
+    after: [apt-mirror]
+    stage-packages:
+      - uwsgi
+      - uwsgi-plugin-python3
+      - python3-cherrypy3
+    filesets:
+      uwsgi:
+        - usr/bin/uwsgi-core
+        - usr/bin/uwsgi_python35
+        - lib
+        - usr/lib
+    stage:
+      - $uwsgi
+    snap:
+      - $uwsgi
