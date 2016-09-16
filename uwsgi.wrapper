@@ -1,7 +1,6 @@
 #!/bin/bash
 
 LD_LIBRARY_PATH="$SNAP/usr/lib/*linux-gnu:$SNAP/lib/*linux-gnu:$LD_LIBRARY_PATH"
-
 export LD_LIBRARY_PATH
 
-uwsgi-core "$@"
+uwsgi-core --plugins-dir $SNAP/usr/lib/uwsgi/plugins/ --need-plugin python35 "$@"

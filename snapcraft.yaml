@@ -12,6 +12,7 @@ apps:
 parts:
   apt-mirror:
     source: https://github.com/cyphermox/apt-mirror.git
+    #source: .
     plugin: dump
     organize:
       apt-mirror-timetravel: "usr/share/apt-mirror/apt-mirror-timetravel"
@@ -30,21 +31,10 @@ parts:
       - -apt-mirror-snapshot.conf
       - -excludes.list
       - -nginx.snapshot
-  release:
-    source: .
-    plugin: dump
+  env:
+    plugin: nil
     after: [apt-mirror]
     stage-packages:
       - uwsgi
       - uwsgi-plugin-python3
       - python3-cherrypy3
-    filesets:
-      uwsgi:
-        - usr/bin/uwsgi-core
-        - usr/bin/uwsgi_python35
-        - lib
-        - usr/lib
-    stage:
-      - $uwsgi
-    snap:
-      - $uwsgi
